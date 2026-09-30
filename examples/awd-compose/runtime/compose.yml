@@ -1,5 +1,0 @@
-services:
-  web:
-    image: placeholder
-  redis:
-    image: placeholder
