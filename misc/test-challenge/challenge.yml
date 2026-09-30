@@ -1,0 +1,14 @@
+apiVersion: gitops.noctf.dev/v2
+kind: ChallengeTemplate
+id: 7f12aaca-4aa9-4161-b851-f7f48623ab92
+mode: Ctf
+title: "Test Challenge"
+direction: misc
+visibility: Private
+statement: statement.md
+attachments: []
+flags: []
+definition:
+  mode: Ctf
+  ctf:
+    interactionKind: FlagSubmission
