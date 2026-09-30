@@ -5,4 +5,5 @@ competitionId: 01a0f097-3f51-7de6-819e-b3221fd8ca93
 title: "GitOps Test"
 description: null
 mode: Ctf
-challenges: []
+challenges: [{id: 0dca4555-624c-4f78-b8ef-cc0ac5937698, challenge: misc/test-challenge, customTitle: null, order: 10, published: false, hints: [], rules: {"mode": "Ctf", "ctf": {"scoreCurve": {"initialPoints": 100, "minimumPoints": 100, "decayTeamCount": 10, "decayMode": "Linear"}}}}]
+...
