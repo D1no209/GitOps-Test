@@ -1,0 +1,28 @@
+apiVersion: gitops.noctf.dev/v2
+kind: CompetitionChallengeSet
+initialized: false
+competitionId: 00000000-0000-0000-0000-000000000001
+title: NoCTF Competition Template
+description: Initialize this repository from the Initialize competition Issue Form.
+mode: Ctf
+challenges:
+  - id: 00000000-0000-0000-0000-000000000102
+    challenge: examples/ctf-static
+    order: 10
+    customTitle: null
+    published: false
+    hints:
+      - id: 00000000-0000-0000-0000-000000000103
+        content: 从附件内容开始检查。
+        cost: 10
+        publishedAt: null
+    rules:
+      mode: Ctf
+      ctf:
+        scoreCurve:
+          initialPoints: 100
+          minimumPoints: 50
+          decayTeamCount: 10
+          decayMode: Quadratic
+        bloodRewards: []
+        maxFlagAttempts: 20

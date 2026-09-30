@@ -1,0 +1,65 @@
+apiVersion: gitops.noctf.dev/v2
+kind: ChallengeTemplate
+id: 40000000-0000-0000-0000-000000000101
+mode: Awdp
+title: AWDP Example
+direction: Examples
+visibility: Private
+statement: statement.md
+attachments: []
+flags: []
+build:
+  images:
+    - key: target
+      context: runtime
+      dockerfile: runtime/Dockerfile
+    - key: checker
+      context: checker
+      dockerfile: checker/Dockerfile
+definition:
+  mode: Awdp
+  awdp: {}
+  runtime:
+    kind: Container
+    allocation: PerTeam
+    flagSource: PerTeam
+    egressPolicy: Isolated
+    urlBindings:
+      - urlTemplate: http://{HOST}:{PORT}/
+        exposure: OwnerOnly
+        containerPort: 8080
+        isControlCheck: false
+    limits:
+      memoryBytes: 268435456
+      nanoCpus: 500000000
+      pidsLimit: 128
+    container:
+      image:
+        build: target
+      command: []
+      environment: {}
+      labels: {}
+      portMappings:
+        - containerPort: 8080
+          hostPort: 0
+      security:
+        noNewPrivileges: false
+        readonlyRootfs: false
+        runAsNonRoot: false
+        capDrop: []
+        capAdd: []
+      internalPorts: [8080]
+      flagEnvironmentVariableName: FLAG
+  checkerFixInput: false
+  patchEntrypoint: fix.sh
+  patchCommand: []
+  patchTimeoutSeconds: 60
+  readyTimeoutSeconds: 30
+  maximumPatchUploadBytes: 67108864
+  checker:
+    image:
+      build: checker
+    command: []
+    environment: {}
+    timeoutSeconds: 30
+    targetServiceName: null

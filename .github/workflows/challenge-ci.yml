@@ -1,0 +1,76 @@
+name: Challenge CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: challenge-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d
+        with:
+          dotnet-version: 10.0.x
+      - name: Build repository tool
+        run: dotnet build .github/scripts/repository.cs
+      - name: Validate manifests
+        run: dotnet run --file .github/scripts/repository.cs -- validate
+      - name: Run repository tests
+        run: dotnet run --file .github/scripts/repository.cs -- self-test
+
+  plan:
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d
+        with:
+          dotnet-version: 10.0.x
+      - id: plan
+        name: Discover changed images
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          dotnet run --file .github/scripts/repository.cs -- plan --base "$BASE_SHA" --head "$HEAD_SHA" --sha "$HEAD_SHA" --github-output
+
+  build:
+    needs: plan
+    if: needs.plan.outputs.matrix != '[]'
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-dotnet@d4c94342e560b34958eacfc5d055d21461ed1c5d
+        with:
+          dotnet-version: 10.0.x
+      - uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435
+      - name: Build image
+        env:
+          CUSTOM_REGISTRY_HOST: ${{ vars.CUSTOM_REGISTRY_HOST }}
+          CUSTOM_REGISTRY_NAMESPACE: ${{ vars.CUSTOM_REGISTRY_NAMESPACE }}
+        run: >-
+          dotnet run --file .github/scripts/repository.cs --
+          build
+          --challenge '${{ matrix.image.challenge }}'
+          --key '${{ matrix.image.key }}'
+          --sha '${{ matrix.image.gitSha }}'
